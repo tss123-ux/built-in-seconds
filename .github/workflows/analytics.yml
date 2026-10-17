@@ -1,0 +1,22 @@
+name: analytics
+on:
+  schedule: [{cron: "30 15 * * *"}]  # 21:00 IST
+  workflow_dispatch: {}
+permissions: {contents: write}
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt && python analytics.py
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+      - run: |
+          git config user.name "built-in-seconds-bot"; git config user.email "bot@users.noreply.github.com"
+          git add analytics && git commit -m "analytics $(date -u +%F)" && git push || true
